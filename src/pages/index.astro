@@ -1,0 +1,466 @@
+---
+// =====================================================================
+// The one and only page. Text and business details come from
+// src/data/site.js; styles live in src/styles/global.css.
+// Sections appear in the same order as the design prototype.
+// =====================================================================
+import { Image } from 'astro:assets';
+import '../styles/global.css';
+import logo from '../assets/logo.png';
+import logoWhite from '../assets/logo-white.png';
+import {
+  business, seo, FORM_ENDPOINT, services, defaultService,
+  story, promise, reviews, chips,
+} from '../data/site.js';
+
+const tel = `tel:${business.phoneTel}`;
+const canonical = new URL('/', Astro.site).href;
+const ogImage = new URL('/og-image.png', Astro.site).href;
+const year = 2026; // shown in the footer copyright
+
+// Structured data for Google (LocalBusiness subtype for contractors).
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'GeneralContractor',
+  name: business.name,
+  url: canonical,
+  image: ogImage,
+  logo: new URL('/favicon.png', Astro.site).href,
+  description: seo.description,
+  telephone: `+${business.phoneTel}`,
+  email: business.email,
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: business.address.street,
+    addressLocality: business.address.city,
+    addressRegion: business.address.region,
+    postalCode: business.address.postalCode,
+    addressCountry: business.address.country,
+  },
+  openingHours: business.hours.schema,
+  areaServed: business.areaServed,
+  sameAs: Object.values(business.socials),
+};
+---
+<!doctype html>
+<html lang="en-CA">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{seo.title}</title>
+  <meta name="description" content={seo.description} />
+  <link rel="canonical" href={canonical} />
+  <meta name="theme-color" content="#EEEDE9" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content={business.name} />
+  <meta property="og:title" content={seo.title} />
+  <meta property="og:description" content={seo.description} />
+  <meta property="og:url" content={canonical} />
+  <meta property="og:image" content={ogImage} />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:locale" content="en_CA" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;500;600;700&family=Karla:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet" />
+
+  <!-- Tells the CSS that JavaScript is running, so animations may hide
+       things first. Without JS everything simply stays visible. -->
+  <script is:inline>document.documentElement.classList.add('js');</script>
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+</head>
+<body>
+<div id="top" class="page">
+
+  <!-- ============ HEADER ============ -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="#top" class="header-logo">
+        <Image src={logo} alt={business.name} height={62} densities={[1, 2]} loading="eager" />
+      </a>
+      <nav class="main-nav" id="main-nav" aria-label="Main">
+        <a href="#services">Services</a>
+        <a href="#about">About Lee</a>
+        <a href="#reviews">Testimonials</a>
+        <a href="#contact">Contact</a>
+      </nav>
+      <div class="header-actions">
+        <button type="button" class="menu-button" aria-expanded="false" aria-controls="main-nav">
+          <span class="menu-icon" aria-hidden="true"></span>
+          <span class="menu-label">Menu</span>
+        </button>
+        <a href={tel} class="header-call">{business.phoneDisplay}</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+  <!-- ============ HERO ============ -->
+  <section class="hero">
+    <div class="hero-text">
+      <p class="eyebrow" data-hero style="--i:0">Your renovation specialist · 25 years</p>
+      <h1 data-hero style="--i:1">Broad vision.<br /><span class="light">Careful thought.</span><br />Hand-crafted design.<br /><span class="built-right">Built right.</span></h1>
+      <p class="hero-sub" data-hero style="--i:2">New builds and renovations of every size, from small repairs to complete homes. Free estimates, flexible to your materials and schedule.</p>
+      <div class="hero-buttons" data-hero style="--i:3">
+        <a href="#contact" class="btn btn-solid">Schedule an appointment</a>
+        <a href="#services" class="btn btn-outline">What I build</a>
+      </div>
+    </div>
+    <div class="hero-art">
+      <div class="blueprint-grid" aria-hidden="true"></div>
+      <Image
+        src={logo}
+        alt=""
+        class="hero-logo"
+        widths={[280, 560, 750]}
+        sizes="(min-width: 1000px) 560px, min(calc(100vw - 36px), 560px)"
+        loading="eager"
+        fetchpriority="high"
+      />
+    </div>
+  </section>
+
+  <!-- ============ CRAFTSMANSHIP STATEMENT (black band) ============ -->
+  <section class="statement">
+    <div class="statement-inner two-col">
+      <h2 class="h2" data-reveal>Craftsmanship committed to <span class="light">superior quality.</span></h2>
+      <div class="statement-copy">
+        <p class="statement-lead" data-reveal>We pride ourselves on top-quality workmanship on all types of construction projects. Whether you have a new build or a renovation, we can bring your vision to life.</p>
+        <p class="statement-more" data-reveal>With 25 years in the construction industry and a team of top-rate industry professionals, you get top-notch service and quality in every area of your project.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SERVICES ("Any size of job.") ============ -->
+  <section id="services" class="services">
+    <div class="services-head two-col">
+      <h2 class="h2" data-reveal>Any size of job.</h2>
+      <p class="services-intro" data-reveal>From the one-day jobs that never get done, to week-long projects, to complete home renovations.</p>
+    </div>
+
+    <div class="scale" data-scale>
+      <!-- Progress rail: grey track plus a black fill up to the chosen item -->
+      <div class="scale-rail" aria-hidden="true"></div>
+      <div class="scale-fill" aria-hidden="true" style={`width:${(defaultService / (services.length - 1)) * 100}%`}></div>
+      <div class="scale-items" role="tablist" aria-label="Size of job">
+        {services.map((s, i) => (
+          <button
+            type="button"
+            role="tab"
+            id={`scale-tab-${i}`}
+            class:list={['scale-item', { 'is-filled': i <= defaultService }]}
+            aria-selected={i === defaultService ? 'true' : 'false'}
+            aria-controls={`scale-panel-${i}`}
+            tabindex={i === defaultService ? '0' : '-1'}
+          >
+            <span class="scale-dot" aria-hidden="true"></span>
+            <span class="scale-label">{s.t}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+
+    <div class="scale-box">
+      {services.map((s, i) => (
+        <div
+          class="scale-panel"
+          role="tabpanel"
+          id={`scale-panel-${i}`}
+          aria-labelledby={`scale-tab-${i}`}
+          hidden={i !== defaultService}
+        >
+          <div class="scale-panel-text">
+            <h3>{s.h}</h3>
+            <p>{s.p}</p>
+          </div>
+          <ul class="scale-list">
+            {s.list.map((l) => <li>{l}</li>)}
+          </ul>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- ============ ABOUT ("My name is Lee.") ============ -->
+  <section id="about" class="about">
+    <div class="about-inner two-col">
+      <div class="about-intro">
+        <p class="eyebrow" data-reveal>About me</p>
+        <h2 class="h2-xl" data-reveal>My name <span class="light">is Lee.</span></h2>
+        <p class="about-lead" data-reveal>I’ve been in the construction industry for over 25 years, and built a repeat customer base that has grown on Vancouver’s North Shore.</p>
+      </div>
+      <div class="story">
+        {story.map((st) => (
+          <div class="story-block" data-reveal>
+            <h3>{st.t}</h3>
+            <p>{st.d}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PROMISE (black panel) ============ -->
+  <section class="promise">
+    <div class="promise-panel two-col">
+      <h2 class="h2-lg" data-reveal>My <span class="light">promise.</span></h2>
+      <div class="promise-list">
+        {promise.map((p) => <div class="promise-line" data-reveal>{p}</div>)}
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TESTIMONIALS ============ -->
+  <section id="reviews" class="reviews">
+    <h2 class="h2 reviews-title" data-reveal>Testimonials</h2>
+    <div class="reviews-grid two-col">
+      {reviews.map((r) => (
+        <figure class="review" data-reveal>
+          <blockquote>“{r.q}”</blockquote>
+          <figcaption>{r.n}<span> · {r.c}</span></figcaption>
+        </figure>
+      ))}
+    </div>
+  </section>
+
+  <!-- ============ CONTACT (dark) ============ -->
+  <section id="contact" class="contact">
+    <div class="contact-inner two-col">
+      <div class="contact-info">
+        <h2 class="h2-lg" data-reveal>Schedule an <span class="light">appointment.</span></h2>
+        <p class="contact-note" data-reveal>All estimates are free and flexible according to materials and scheduling.</p>
+        <a class="contact-tel" data-reveal href={tel}>{business.phoneDisplay}</a>
+        <a class="contact-email" data-reveal href={`mailto:${business.email}`}>{business.email}</a>
+        <div class="contact-details" data-reveal>
+          <div>
+            <strong>Hours</strong>
+            <span>{business.hours.days}<br />{business.hours.time}</span>
+          </div>
+          <div>
+            <strong>Mail</strong>
+            <span>{business.address.street}<br />{business.address.city}, {business.address.region} {business.address.postalCode}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="contact-form-wrap" data-reveal>
+        <form
+          class="estimate-form"
+          id="estimate-form"
+          action={FORM_ENDPOINT || undefined}
+          method="POST"
+          data-endpoint={FORM_ENDPOINT}
+          data-email={business.email}
+          data-phone={business.phoneDisplay}
+        >
+          <div class="form-row">
+            <label>Name<input name="name" autocomplete="name" required /></label>
+            <label>Phone<input name="phone" type="tel" autocomplete="tel" required /></label>
+          </div>
+          <label>Email<input name="email" type="email" autocomplete="email" required /></label>
+
+          <div class="chips" role="group" aria-label="Project type">
+            {chips.map((c) => (
+              <button type="button" class="chip" aria-pressed="false" data-chip={c}>{c}</button>
+            ))}
+          </div>
+          <!-- The chips above write the chosen project types into this field -->
+          <input type="hidden" name="project_type" value="" />
+
+          <label>Tell me about your project<textarea name="message" rows="4"></textarea></label>
+
+          <!-- Spam trap: real people never see or fill this in -->
+          <div class="honeypot" aria-hidden="true">
+            <label>Leave this empty<input type="text" name="_gotcha" tabindex="-1" autocomplete="off" /></label>
+          </div>
+
+          <button type="submit" class="btn btn-solid form-submit">Request a free estimate</button>
+          <p class="form-error" role="alert" hidden></p>
+        </form>
+        <div class="form-thanks" tabindex="-1" role="status" hidden>Thanks. Lee will be in touch to book your estimate.</div>
+      </div>
+    </div>
+  </section>
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <Image src={logoWhite} alt={business.name} height={62} densities={[1, 2]} />
+      <span>{business.address.city}, {business.address.region} · <a href={business.socials.facebook} target="_blank" rel="noopener">Facebook</a></span>
+      <div class="footer-credit">
+        <span>© {year} {business.name}</span>
+        <a href="https://backpackdigitalmedia.com" target="_blank" rel="noopener">Powered by Backpack Digital Media</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ============ MOBILE STICKY BAR (below 1000px) ============ -->
+  <div class="mobile-bar">
+    <a href={tel} class="mobile-call">Call</a>
+    <a href="#contact" class="mobile-estimate">Free estimate</a>
+  </div>
+</div>
+
+<script>
+  // ===================================================================
+  // All the page's interactivity, in plain JavaScript.
+  // ===================================================================
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const ease = 'cubic-bezier(.16,.84,.3,1)';
+
+  // ---------- Mobile menu ----------
+  const menuButton = document.querySelector<HTMLButtonElement>('.menu-button');
+  const nav = document.getElementById('main-nav');
+  function setMenu(open: boolean) {
+    if (!menuButton || !nav) return;
+    menuButton.setAttribute('aria-expanded', String(open));
+    nav.classList.toggle('is-open', open);
+  }
+  menuButton?.addEventListener('click', () => {
+    setMenu(menuButton.getAttribute('aria-expanded') !== 'true');
+  });
+  nav?.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setMenu(false)));
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && menuButton?.getAttribute('aria-expanded') === 'true') {
+      setMenu(false);
+      menuButton.focus();
+    }
+  });
+  document.addEventListener('click', (e) => {
+    const t = e.target as Node;
+    if (nav?.classList.contains('is-open') && !nav.contains(t) && !menuButton?.contains(t)) setMenu(false);
+  });
+
+  // (The hero stagger and logo draw-in are pure CSS: see global.css.)
+
+  // ---------- Scroll reveal ----------
+  // Elements already on screen at load stay as they are; the rest are
+  // hidden (by CSS, only when JS runs) and rise in as they scroll into view.
+  const revealEls = Array.from(document.querySelectorAll<HTMLElement>('[data-reveal]'));
+  const show = (el: HTMLElement, i: number) => {
+    el.style.transitionDelay = `${i * 0.08}s`;
+    el.classList.add('is-visible');
+  };
+  if (reduceMotion || !('IntersectionObserver' in window)) {
+    revealEls.forEach((el) => el.classList.add('is-visible', 'no-anim'));
+  } else {
+    const io = new IntersectionObserver((entries) => {
+      let i = 0;
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          show(entry.target as HTMLElement, i++);
+          io.unobserve(entry.target);
+        }
+      });
+    }, { rootMargin: '0px 0px -8% 0px' });
+    revealEls.forEach((el) => {
+      if (el.getBoundingClientRect().top < window.innerHeight) {
+        el.classList.add('is-visible', 'no-anim');
+      } else {
+        io.observe(el);
+      }
+    });
+    // Safety net (as in the design): after 3.5s show anything still hidden.
+    setTimeout(() => revealEls.forEach((el) => el.classList.add('is-visible')), 3500);
+  }
+
+  // ---------- Services list ("Any size of job.") ----------
+  const scale = document.querySelector<HTMLElement>('[data-scale]');
+  if (scale) {
+    const tabs = Array.from(scale.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+    const fill = scale.querySelector<HTMLElement>('.scale-fill');
+    const pick = (index: number, focus = false) => {
+      tabs.forEach((tab, i) => {
+        const active = i === index;
+        tab.setAttribute('aria-selected', String(active));
+        tab.tabIndex = active ? 0 : -1;
+        tab.classList.toggle('is-filled', i <= index); // dots fill up to the active item
+        const panel = document.getElementById(tab.getAttribute('aria-controls') || '');
+        if (panel) panel.hidden = !active;
+      });
+      if (fill) fill.style.width = `${(index / (tabs.length - 1)) * 100}%`;
+      if (focus) tabs[index].focus();
+    };
+    tabs.forEach((tab, i) => {
+      tab.addEventListener('click', () => pick(i));
+      tab.addEventListener('keydown', (e) => {
+        let next = -1;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (i + 1) % tabs.length;
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (i - 1 + tabs.length) % tabs.length;
+        if (e.key === 'Home') next = 0;
+        if (e.key === 'End') next = tabs.length - 1;
+        if (next >= 0) { e.preventDefault(); pick(next, true); }
+      });
+    });
+  }
+
+  // ---------- Contact form ----------
+  const form = document.getElementById('estimate-form') as HTMLFormElement | null;
+  if (form) {
+    const hiddenType = form.querySelector<HTMLInputElement>('input[name="project_type"]')!;
+    const chipButtons = Array.from(form.querySelectorAll<HTMLButtonElement>('.chip'));
+    const errorBox = form.querySelector<HTMLElement>('.form-error')!;
+    const thanks = document.querySelector<HTMLElement>('.form-thanks')!;
+
+    // Chips are on/off toggles; the chosen ones are saved in the hidden field.
+    chipButtons.forEach((chip) => chip.addEventListener('click', () => {
+      chip.setAttribute('aria-pressed', String(chip.getAttribute('aria-pressed') !== 'true'));
+      hiddenType.value = chipButtons
+        .filter((c) => c.getAttribute('aria-pressed') === 'true')
+        .map((c) => c.dataset.chip)
+        .join(', ');
+    }));
+
+    const showThanks = () => {
+      form.hidden = true;
+      thanks.hidden = false;
+      thanks.focus();
+    };
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorBox.hidden = true;
+      const data = new FormData(form);
+      if (data.get('_gotcha')) return; // a bot filled the spam trap
+
+      const endpoint = form.dataset.endpoint;
+      if (endpoint) {
+        // FORM_ENDPOINT is set in site.js: send to Formspree (or similar).
+        const submit = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+        submit.disabled = true;
+        try {
+          const res = await fetch(endpoint, { method: 'POST', body: data, headers: { Accept: 'application/json' } });
+          if (!res.ok) throw new Error(String(res.status));
+          showThanks();
+        } catch {
+          errorBox.textContent = `Sorry, that didn’t send. Please call ${form.dataset.phone}.`;
+          errorBox.hidden = false;
+        } finally {
+          submit.disabled = false;
+        }
+      } else {
+        // No FORM_ENDPOINT yet: open the visitor's email app with a
+        // ready-made message to the business email, then say thanks.
+        const body = [
+          `Name: ${data.get('name') || ''}`,
+          `Phone: ${data.get('phone') || ''}`,
+          `Email: ${data.get('email') || ''}`,
+          `Project type: ${data.get('project_type') || ''}`,
+          '',
+          `${data.get('message') || ''}`,
+        ].join('\n');
+        const subject = `Estimate request from ${data.get('name') || 'the website'}`;
+        window.location.href = `mailto:${form.dataset.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        showThanks();
+      }
+    });
+  }
+</script>
+</body>
+</html>
